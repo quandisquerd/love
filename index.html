@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chữ rơi tự do trong không gian 3D</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: black;
+      }
+
+      .scene {
+        width: 100vw;
+        height: 100vh;
+        perspective: 1000px;
+        cursor: grab;
+      }
+
+      .space {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        user-select: none;
+      }
+
+      .letter-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform-style: preserve-3d;
+        will-change: transform;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .letter {
+        position: relative;
+        font-size: 14px;
+        font-weight: bold;
+        color: transparent;
+        text-shadow: 0 0 10px #fff;
+        white-space: nowrap;
+        transform: translate(-50%, -50%);
+        user-select: none;
+      }
+    </style>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="scene" id="scene">
+      <div class="space" id="space"></div>
+    </div>
+
+    <script>
+      const space = document.getElementById("space");
+      const text = "I LOVE YOU";
+      const texts = text.split("");
+      const colors = [
+        "red",
+        "cyan",
+        "lime",
+        "yellow",
+        "magenta",
+        "blue",
+        "violet",
+        "orange",
+      ];
+
+      const letters = [];
+
+      for (let i = 0; i < 200; i++) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "letter-wrapper";
+
+        const span = document.createElement("span");
+        span.className = "letter";
+        span.textContent = text;
+
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        span.style.webkitTextStroke = `1px ${color}`;
+        span.style.textShadow = `
+    0 0 5px ${color},
+    0 0 10px ${color},
+    0 0 15px ${color}
+  `;
+
+        wrapper.appendChild(span);
+        space.appendChild(wrapper);
+
+        // Nếu i chia hết cho 10 thì thêm icon heart
+        if (i % 10 === 0) {
+          const iconWrapper = document.createElement("div");
+          iconWrapper.className = "letter-wrapper";
+
+          const icon = document.createElement("i");
+          icon.className = "fa fa-heart";
+          icon.setAttribute("aria-hidden", "true");
+
+          const iconColor = colors[Math.floor(Math.random() * colors.length)];
+          icon.style.webkitTextStroke = `1px ${iconColor}`;
+          icon.style.textShadow = `
+      0 0 5px ${iconColor},
+      0 0 10px ${iconColor},
+      0 0 15px ${iconColor}
+    `;
+
+          iconWrapper.appendChild(icon);
+          space.appendChild(iconWrapper);
+
+          // Tạo vị trí ngẫu nhiên cho icon
+          const xIcon = Math.random() * 1000 - 500;
+          const yIcon = Math.random() * 1000 - 500;
+          const zIcon = Math.random() * 1000 - 500;
+
+          letters.push({
+            el: icon,
+            wrapper: iconWrapper,
+            x: xIcon,
+            y: yIcon,
+            z: zIcon,
+            dx: (Math.random() - 0.5) * 0.5,
+            dy: (Math.random() - 0.5) * 0.5,
+            dz: (Math.random() - 0.5) * 0.5,
+          });
+        }
+
+        // Tạo vị trí ngẫu nhiên cho chữ
+        const x = Math.random() * 1000 - 500;
+        const y = Math.random() * 1000 - 500;
+        const z = Math.random() * 1000 - 500;
+
+        letters.push({
+          el: span,
+          wrapper: wrapper,
+          x,
+          y,
+          z,
+          dx: (Math.random() - 0.5) * 0.5,
+          dy: (Math.random() - 0.5) * 0.5,
+          dz: (Math.random() - 0.5) * 0.5,
+        });
+      }
+
+      function animate() {
+        for (const l of letters) {
+          l.x += l.dx;
+          l.y += l.dy;
+          l.z += l.dz;
+
+          // Reset khi quá xa để chữ không mất hẳn
+          if (
+            Math.abs(l.x) > 1500 ||
+            Math.abs(l.y) > 1500 ||
+            Math.abs(l.z) > 1500
+          ) {
+            l.x = Math.random() * 1000 - 500;
+            l.y = Math.random() * 1000 - 500;
+            l.z = Math.random() * 1000 - 500;
+          }
+
+          l.wrapper.style.transform = `translate3d(${l.x}px, ${l.y}px, ${l.z}px)`;
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      // Xoay không gian bằng chuột
+      let isDragging = false;
+      let lastX, lastY;
+      let rotX = 0,
+        rotY = 0;
+
+      const updateRotation = () => {
+        space.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      };
+
+      document.getElementById("scene").addEventListener("mousedown", (e) => {
+        isDragging = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+      });
+
+      document.addEventListener("mouseup", () => (isDragging = false));
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        rotY += dx * 0.3;
+        rotX -= dy * 0.3;
+        updateRotation();
+        lastX = e.clientX;
+        lastY = e.clientY;
+      });
+      let isTouching = false;
+      let lastTouchX, lastTouchY;
+
+      const onTouchStart = (e) => {
+        if (e.touches.length === 1) {
+          // Chỉ xử lý 1 ngón tay
+          isTouching = true;
+          lastTouchX = e.touches[0].clientX;
+          lastTouchY = e.touches[0].clientY;
+        }
+      };
+
+      const onTouchMove = (e) => {
+        if (!isTouching) return;
+        if (e.touches.length !== 1) return;
+
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+
+        const dx = touchX - lastTouchX;
+        const dy = touchY - lastTouchY;
+
+        rotY += dx * 0.3;
+        rotX -= dy * 0.3;
+
+        updateRotation();
+
+        lastTouchX = touchX;
+        lastTouchY = touchY;
+
+        e.preventDefault(); // Ngăn scroll khi vuốt trên scene
+      };
+
+      const onTouchEnd = (e) => {
+        isTouching = false;
+      };
+
+      const scene = document.getElementById("scene");
+      scene.addEventListener("touchstart", onTouchStart, { passive: false });
+      scene.addEventListener("touchmove", onTouchMove, { passive: false });
+      scene.addEventListener("touchend", onTouchEnd);
+      scene.addEventListener("touchcancel", onTouchEnd);
+    </script>
+  </body>
+</html>
