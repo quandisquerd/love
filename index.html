@@ -40,7 +40,7 @@
         font-size: 14px;
         /* font-weight: bold; */
         color: transparent;
-        text-shadow: 0 0 10px #fff;
+        /* text-shadow: 0 0 10px #fff; */
         white-space: nowrap;
         transform: translate(-50%, -50%);
         user-select: none;
@@ -58,8 +58,13 @@
 
     <script>
       const space = document.getElementById("space");
-      const text = "I LOVE YOU";
-      const texts = text.split("");
+      const texts = [
+  "Cảm ơn vì em đã đến",
+  "Chú sẽ luôn bên cạnh em",
+  "Chú yêu em nhiều lắm",
+  "Chú chỉ thương mỗi mình em",
+  "Linh❤️Ngân"
+];
       const colors = [
         "red",
         "cyan",
@@ -79,15 +84,11 @@
 
         const span = document.createElement("span");
         span.className = "letter";
-        span.textContent = text;
+        span.textContent = texts[Math.floor(Math.random() * texts.length)];
 
         const color = colors[Math.floor(Math.random() * colors.length)];
         span.style.webkitTextStroke = `1px ${color}`;
-        span.style.textShadow = `
-    0 0 5px ${color},
-    0 0 10px ${color},
-    0 0 15px ${color}
-  `;
+        
 
         wrapper.appendChild(span);
         space.appendChild(wrapper);
@@ -102,12 +103,8 @@
           icon.setAttribute("aria-hidden", "true");
 
           const iconColor = colors[Math.floor(Math.random() * colors.length)];
-          icon.style.webkitTextStroke = `1px ${iconColor}`;
-          icon.style.textShadow = `
-      0 0 5px ${iconColor},
-      0 0 10px ${iconColor},
-      0 0 15px ${iconColor}
-    `;
+          // icon.style.webkitTextStroke = `1px ${iconColor}`;
+      
 
           iconWrapper.appendChild(icon);
           space.appendChild(iconWrapper);
